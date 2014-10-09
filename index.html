@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search HomeHub</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?libraries=places"></script>
+    <script src="react.min.js"></script>
+    <script src="JSXTransformer.js"></script>
+</head>
+<body>
+    <section id="content"></section>
+
+    <script src="jquery.js"></script>
+    <script type="text/jsx">
+      /** @jsx React.DOM */
+
+      var PropertyBox = React.createClass({
+        handleSearchSubmit: function(property) {
+          $.ajax({
+                url: this.props.url,
+                dataType: 'json',
+                type: 'GET',
+                data: property,
+                success: function(data) {
+                  if (data.hits != undefined) { this.setState({total: data.hits.total}); }
+                  if (data.hits.hits != undefined) { this.setState({properties: data.hits.hits}); }
+                  if (data.aggregations != undefined) { this.setState({aggregations: data.aggregations}); }
+                }.bind(this),
+                error: function(xhr, status, err) {
+                  console.error(this.props.url, status, err.toString());
+                }.bind(this)
+          });
+        },
+        getInitialState: function() {
+          return {total: 0, properties: [], aggregations: []};
+        },
+        componentDidMount: function() {
+          //this.loadPropertiesFromServer();
+          //setInterval(this.loadPropertiesFromServer, this.props.pollInterval);
+        },
+        render: function() {
+          return (
+            <div>
+                <div className="searchBox">
+                  <SearchForm onSearchSubmit={this.handleSearchSubmit} aggregations={this.state.aggregations} />
+                </div>
+                <div className="resultsBox">
+                    <span>Found {this.state.total} matching results</span>
+                    <Properties data={this.state.properties} />
+                </div>
+            </div>
+          );
+        }
+      });
+
+
+
+      var SearchForm = React.createClass({
+        handleSubmit: function() {
+
+          // building query parameters hash
+          var query = {};
+          query['lon'] = this.refs.lon.getDOMNode().value.trim();
+          query['lat'] = this.refs.lat.getDOMNode().value.trim();
+          query['distance'] = this.refs.distance.getDOMNode().value.trim();
+          if (this.refs.roommin != undefined && this.refs.roommin.getDOMNode().value != "") { query['roommin'] = this.refs.roommin.getDOMNode().value.trim(); }
+          if (this.refs.roommax != undefined && this.refs.roommax.getDOMNode().value != "") { query['roommax'] = this.refs.roommax.getDOMNode().value.trim(); }
+          if (this.refs.pricemin != undefined && this.refs.pricemin.getDOMNode().value != "") { query['pricemin'] = this.refs.pricemin.getDOMNode().value.trim(); }
+          if (this.refs.pricemax != undefined && this.refs.pricemax.getDOMNode().value != "") { query['pricemax'] = this.refs.pricemax.getDOMNode().value.trim(); }
+          if (this.refs.surfacemin != undefined && this.refs.surfacemin.getDOMNode().value != "") { query['surfacemin'] = this.refs.surfacemin.getDOMNode().value.trim(); }
+          if (this.refs.surfacemax != undefined && this.refs.surfacemax.getDOMNode().value != "") { query['surfacemax'] = this.refs.surfacemax.getDOMNode().value.trim(); }
+
+
+          this.props.onSearchSubmit(query);
+
+          return false;
+        },
+        handlePriceAggChange: function(from, to) {
+          this.refs.pricemin.getDOMNode().value = from;
+          this.refs.pricemax.getDOMNode().value = to;
+          this.handleSubmit();
+        },
+        handleBedRoomsAggChange: function(from, to) {
+          this.refs.roommin.getDOMNode().value = from;
+          this.refs.roommax.getDOMNode().value = to;
+          this.handleSubmit();
+        },
+        handleSurfaceAggChange: function(from, to) {
+          this.refs.surfacemin.getDOMNode().value = from;
+          this.refs.surfacemax.getDOMNode().value = to;
+          this.handleSubmit();
+        },
+        render: function() {
+
+          var aggBedRoomsCountNodes = [];
+          if(this.props.aggregations.hasOwnProperty("bedroomscount_ranges")) {
+            aggBedRoomsCountNodes =  <Aggregations title="Bedrooms"
+                                                    aggregations={this.props.aggregations.bedroomscount_ranges.buckets}
+                                                    onAggChange={this.handleBedRoomsAggChange}
+                                                    alllabel="All Room Count" />
+          }
+
+          var aggPriceNodes = [];
+          if(this.props.aggregations.hasOwnProperty("price_ranges")) {
+            aggPriceNodes =  <Aggregations title="Prices"
+                                            aggregations={this.props.aggregations.price_ranges.buckets}
+                                            onAggChange={this.handlePriceAggChange}
+                                            alllabel="All Price" />
+          }
+
+          var aggSurfaceNodes = [];
+          if(this.props.aggregations.hasOwnProperty("surface_ranges")) {
+            aggSurfaceNodes =  <Aggregations title="Surface"
+                                            aggregations={this.props.aggregations.surface_ranges.buckets}
+                                            onAggChange={this.handleSurfaceAggChange}
+                                            alllabel="All Surfaces" />
+          }
+
+          return (
+            <form onSubmit={this.handleSubmit}>
+              <input name="location" />
+              <Suggest />
+              <input type="hidden" ref="lon" value="4.332853" />
+              <input type="hidden" ref="lat" value="40.122853" />
+              <select ref="distance">
+                <option value="5">5km</option>
+                <option value="10">10km</option>
+                <option value="20">20km</option>
+                <option value="50">50km</option>
+                <option value="200">200km</option>
+                <option value="2000">2000km</option>
+                <option value="20000">20000km</option>
+              </select>
+              <input type="hidden" ref="roommin" />
+              <input type="hidden" ref="roommax" />
+              <input type="hidden" ref="pricemin" />
+              <input type="hidden" ref="pricemax" />
+              <input type="hidden" ref="surfacemin" />
+              <input type="hidden" ref="surfacemax" />
+              <input type="submit" value="Chercher" />
+              <div class="aggregation">
+                {aggPriceNodes}
+              </div>
+              <div class="aggregation">
+                {aggBedRoomsCountNodes}
+              </div>
+              <div class="aggregation">
+                {aggSurfaceNodes}
+              </div>
+            </form>
+          );
+        }
+      });
+
+      var Suggest = React.createClass({
+        getDefaultProps: function() {
+            var gMapsPlacesService;
+            try {
+                gMapsPlacesService = new google.maps.places.AutocompleteService();
+            } catch (err) {
+                console.log(err + ' Error initializing google.maps.places.AutocompleteService()');
+            }
+
+            return {
+                gMapsPlacesService: gMapsPlacesService
+            };
+        },
+        getInitialState: function() {
+          return {data: [], current: 0};
+        },
+        handleChange: function() {
+            var querystring = this.refs.querystring.getDOMNode().value.trim();
+            if (querystring.length > 1 && this.props.gMapsPlacesService != undefined) {
+                var keepThis = this;
+                this.props.gMapsPlacesService.getPlacePredictions({ input: querystring },
+                    function(predictions, status) {
+                       if (status == google.maps.places.PlacesServiceStatus.OK) {
+                         keepThis.setState({data: predictions, current: 0});
+                       } else {
+                         console.log('PlacesServiceStatus: ' + status + ' predictions: ' + predictions);
+                       }
+                    }
+                );
+            }
+
+        },
+        handleKeyUp: function(e) {
+            if (this.state.data.length > 0) { // do only if they are any predictions
+                switch(e.key) {
+                    case 'ArrowDown':
+                        this.setState({current: this.getSuggestionIndex('down')});
+                        break;
+                    case 'ArrowUp':
+                        this.setState({current: this.getSuggestionIndex('up')});
+                        break;
+                    case 'Enter':
+                        console.log('enter');
+                        break;
+                }
+                this.refs.querystring.getDOMNode().value = this.state.data[this.state.current].description;
+            }
+        },
+        getSuggestionIndex: function(direction) {
+            // current is the current element selected
+            // direction is up or down
+            if (direction == 'down') {
+                if (this.state.current + 1 <= this.state.data.length -1) {
+                    // do select li[this.state.current + 1]
+                    return this.state.current + 1;
+                } else {
+                    // li[this.state.current] already selected
+                    return this.state.current;
+                }
+            } else if (direction == 'up') {
+                if (this.state.current - 1 >= 0) {
+                    // do select li[this.state.current - 1]
+                    return this.state.current - 1
+                } else {
+                    // li[this.state.current] already selected
+                    return this.state.current;
+                }
+            }
+        },
+        render: function() {
+            return (
+                <div>
+                    <input type="text" ref="querystring" onChange={this.handleChange} onKeyUp={this.handleKeyUp}/>
+                    <SuggestedItems data={this.state.data} />
+                </div>
+            );
+        }
+      });
+
+      var SuggestedItems = React.createClass({
+        render: function() {
+            var suggestedItemsNodes = this.props.data.map(function (s) {
+              return (
+                <li>{s.description}</li>
+              );
+          });
+
+          return (
+              <ul>
+                  {suggestedItemsNodes}
+              </ul>
+          );
+        }
+      });
+
+      var Aggregations = React.createClass({
+
+        getInitialState: function() {
+          return {showResetButton: "hideMe"};
+        },
+        handleAggSelected: function(from, to) {
+            this.props.onAggChange(from, to);
+            this.setState({showResetButton: "showMe"});
+            return false;
+        },
+        handleShowAll: function() {
+            this.props.onAggChange(null, null);
+            this.setState({showResetButton: "hideMe"});
+            return false;
+        },
+        render: function() {
+          var handleAggSelectedHandler = this.handleAggSelected;
+          var aggregationNodes = [];
+          var aggregations = this.props.aggregations;
+          for(var i=0; i < aggregations.length; i++) {
+             if (aggregations[i].doc_count > 0) {
+                aggregationNodes.push(
+                    <Aggregation onAggSelected={handleAggSelectedHandler}
+                                count={aggregations[i].doc_count}
+                                key={aggregations[i].key}
+                                from={aggregations[i].from}
+                                to={aggregations[i].to}></Aggregation>);
+             }
+          }
+
+          return (
+            <div>
+              <h1>{this.props.title}</h1>
+              <a onClick={this.handleShowAll} className={this.state.showResetButton}>{this.props.alllabel}</a>
+              <ol>
+                {aggregationNodes}
+              </ol>
+            </div>
+          );
+        }
+      });
+
+      var Aggregation = React.createClass({
+
+        handleClick: function(e) {
+            e.preventDefault();
+            console.log("In handleClick " + this.refs.from.getDOMNode().value.trim() + ' - ' + this.refs.to.getDOMNode().value.trim());
+            this.props.onAggSelected(this.refs.from.getDOMNode().value.trim(), this.refs.to.getDOMNode().value.trim());
+        },
+        render: function() {
+          return (
+            <li>
+                <a onClick={this.handleClick}>
+                    <input type="hidden" ref="from" value={this.props.from} />
+                    <input type="hidden" ref="to" value={this.props.to} />
+                    {this.props.key} ({this.props.count})
+                </a>
+            </li>
+          );
+        }
+      });
+
+      var Properties = React.createClass({
+        render: function() {
+          var propertyNodes = this.props.data.map(function (property) {
+              var p = property._source.property;
+              return (
+                <Property title={p.title}
+                          description={p.description}
+                          bedroomcount={p.bedroomcount}
+                          lon={p.location.lon}
+                          lat={p.location.lat}
+                          score={property._score} ></Property>
+              );
+          });
+          return (
+            <div className="properties">
+              {propertyNodes}
+            </div>
+          );
+        }
+      });
+
+      var Property = React.createClass({
+        render: function() {
+          return (
+            <div className="property">
+              <span>{this.props.score}</span>
+              <h1>{this.props.title}({this.props.bedroomcount} rooms)</h1>
+              <p>{this.props.description}</p>
+              <ul><li>{this.props.lon}</li><li>{this.props.lat}</li></ul>
+            </div>
+          );
+        }
+      });
+
+      
+      React.renderComponent( <PropertyBox url="http://homehub.herokuapp.com/api/properties" />, document.getElementById('content') );
+
+      //var properties = [
+      //  {title: "title 1", description: "description 1"},
+      //  {title: "title 2", description: "description 2"}
+      //];
+      //
+      //React.renderComponent( <Properties data={properties} />, document.getElementById('results') );
+    </script>
+</body>
+</html>

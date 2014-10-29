@@ -6,6 +6,9 @@
     <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?libraries=places"></script>
     <script src="react.min.js"></script>
     <script src="JSXTransformer.js"></script>
+    <script type="text/javascript" src="snap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="layout.css">
+    <link rel="stylesheet" type="text/css" href="skin.css">
 </head>
 <body>
     <section id="content"></section>
@@ -37,14 +40,19 @@
         componentDidMount: function() {
           //this.loadPropertiesFromServer();
           //setInterval(this.loadPropertiesFromServer, this.props.pollInterval);
+          var snapper = new Snap({
+                element: document.getElementById('resultsBox'),
+                disable: 'right'
+          });
+          snapper.open('left');
         },
         render: function() {
           return (
             <div>
-                <div className="searchBox">
+                <div className="searchBox snap-drawers">
                   <SearchForm onSearchSubmit={this.handleSearchSubmit} aggregations={this.state.aggregations} />
                 </div>
-                <div className="resultsBox">
+                <div className="resultsBox snap-content" id="resultsBox">
                     <span>Found {this.state.total} matching results</span>
                     <Properties data={this.state.properties} />
                 </div>
@@ -69,7 +77,7 @@
           if (this.refs.pricemax != undefined && this.refs.pricemax.getDOMNode().value != "") { query['pricemax'] = this.refs.pricemax.getDOMNode().value.trim(); }
           if (this.refs.surfacemin != undefined && this.refs.surfacemin.getDOMNode().value != "") { query['surfacemin'] = this.refs.surfacemin.getDOMNode().value.trim(); }
           if (this.refs.surfacemax != undefined && this.refs.surfacemax.getDOMNode().value != "") { query['surfacemax'] = this.refs.surfacemax.getDOMNode().value.trim(); }
-
+          query['rooms'] = this.refs.rooms.getDOMNode().value.trim();
 
           this.props.onSearchSubmit(query);
 
@@ -80,9 +88,18 @@
           this.refs.pricemax.getDOMNode().value = to;
           this.handleSubmit();
         },
-        handleBedRoomsAggChange: function(from, to) {
-          this.refs.roommin.getDOMNode().value = from;
-          this.refs.roommax.getDOMNode().value = to;
+        handleBedRoomsAggChange: function(value, toBeAdded) {
+          var arrayOfValue = [];
+          arrayOfValue = this.refs.rooms.getDOMNode().value.split(',');
+          if (toBeAdded) {
+            arrayOfValue.push(value);
+          } else {
+            arrayOfValue = arrayOfValue.filter(function(e) {
+                return e != value;
+            });
+          }
+          if (arrayOfValue[0] == "") arrayOfValue.shift();
+          this.refs.rooms.getDOMNode().value = arrayOfValue.join(',');
           this.handleSubmit();
         },
         handleSurfaceAggChange: function(from, to) {
@@ -97,7 +114,9 @@
             aggBedRoomsCountNodes =  <Aggregations title="Bedrooms"
                                                     aggregations={this.props.aggregations.bedroomscount_ranges.buckets}
                                                     onAggChange={this.handleBedRoomsAggChange}
-                                                    alllabel="All Room Count" />
+                                                    alllabel="All Room Count"
+                                                    multiple="true"
+                                                    type="value" />
           }
 
           var aggPriceNodes = [];
@@ -105,7 +124,9 @@
             aggPriceNodes =  <Aggregations title="Prices"
                                             aggregations={this.props.aggregations.price_ranges.buckets}
                                             onAggChange={this.handlePriceAggChange}
-                                            alllabel="All Price" />
+                                            alllabel="All Price"
+                                            multiple="false"
+                                            type="range" />
           }
 
           var aggSurfaceNodes = [];
@@ -113,41 +134,46 @@
             aggSurfaceNodes =  <Aggregations title="Surface"
                                             aggregations={this.props.aggregations.surface_ranges.buckets}
                                             onAggChange={this.handleSurfaceAggChange}
-                                            alllabel="All Surfaces" />
+                                            alllabel="All Surfaces"
+                                            multiple="false"
+                                            type="range" />
           }
 
           return (
-            <form onSubmit={this.handleSubmit}>
-              <input name="location" />
-              <Suggest />
-              <input type="hidden" ref="lon" value="4.332853" />
-              <input type="hidden" ref="lat" value="40.122853" />
-              <select ref="distance">
-                <option value="5">5km</option>
-                <option value="10">10km</option>
-                <option value="20">20km</option>
-                <option value="50">50km</option>
-                <option value="200">200km</option>
-                <option value="2000">2000km</option>
-                <option value="20000">20000km</option>
-              </select>
-              <input type="hidden" ref="roommin" />
-              <input type="hidden" ref="roommax" />
-              <input type="hidden" ref="pricemin" />
-              <input type="hidden" ref="pricemax" />
-              <input type="hidden" ref="surfacemin" />
-              <input type="hidden" ref="surfacemax" />
-              <input type="submit" value="Chercher" />
-              <div class="aggregation">
-                {aggPriceNodes}
-              </div>
-              <div class="aggregation">
-                {aggBedRoomsCountNodes}
-              </div>
-              <div class="aggregation">
-                {aggSurfaceNodes}
-              </div>
-            </form>
+            <div className="snap-drawer snap-drawer-left">
+                <form onSubmit={this.handleSubmit}>
+                  <input name="location" />
+                  <Suggest />
+                  <input type="hidden" ref="lon" value="4.332853" />
+                  <input type="hidden" ref="lat" value="40.122853" />
+                  <select ref="distance">
+                    <option value="5">5km</option>
+                    <option value="10">10km</option>
+                    <option value="20">20km</option>
+                    <option value="50">50km</option>
+                    <option value="200">200km</option>
+                    <option value="2000">2000km</option>
+                    <option value="20000">20000km</option>
+                  </select>
+                  <input type="hidden" ref="pricemin" />
+                  <input type="hidden" ref="pricemax" />
+                  <input type="hidden" ref="surfacemin" />
+                  <input type="hidden" ref="surfacemax" />
+                  <input type="submit" value="Chercher" />
+                  <input type="hidden" ref="rooms" />
+                  <div className="aggregations">
+                      <div className="aggregation">
+                        {aggPriceNodes}
+                      </div>
+                      <div className="aggregation">
+                        {aggBedRoomsCountNodes}
+                      </div>
+                      <div className="aggregation">
+                        {aggSurfaceNodes}
+                      </div>
+                  </div>
+                </form>
+            </div>
           );
         }
       });
@@ -252,9 +278,17 @@
         getInitialState: function() {
           return {showResetButton: "hideMe"};
         },
-        handleAggSelected: function(from, to) {
+        handleAggRangeSelected: function(from, to) {
             this.props.onAggChange(from, to);
             this.setState({showResetButton: "showMe"});
+            return false;
+        },
+        handleAggValueSelected: function(value) {
+            this.props.onAggChange(value);
+            return false;
+        },
+        handleAggMultipleValueSelectedHandler: function(value, toBeAdded) {
+            this.props.onAggChange(value, toBeAdded);
             return false;
         },
         handleShowAll: function() {
@@ -263,25 +297,61 @@
             return false;
         },
         render: function() {
-          var handleAggSelectedHandler = this.handleAggSelected;
+          var handleAggRangeSelectedHandler = this.handleAggRangeSelected;
+          var handleAggValueSelectedHandler = this.handleAggValueSelected;
+          var handleAggRangeSelectedHandler = this.handleAggRangeSelectedHandler;
+
           var aggregationNodes = [];
           var aggregations = this.props.aggregations;
           for(var i=0; i < aggregations.length; i++) {
              if (aggregations[i].doc_count > 0) {
-                aggregationNodes.push(
-                    <Aggregation onAggSelected={handleAggSelectedHandler}
-                                count={aggregations[i].doc_count}
-                                key={aggregations[i].key}
-                                from={aggregations[i].from}
-                                to={aggregations[i].to}></Aggregation>);
+
+                if (this.props.multiple == 'false') {
+
+                    if (this.props.type == 'range') {
+
+                        aggregationNodes.push(
+                            <RangeAggregationRadio onAggSelected={handleAggRangeSelectedHandler}
+                                        count={aggregations[i].doc_count}
+                                        key={aggregations[i].key}
+                                        from={aggregations[i].from}
+                                        to={aggregations[i].to}></RangeAggregationRadio>);
+                    } else if (this.props.type == 'value') {
+                        aggregationNodes.push(
+                            <ValueAggregationRadio onAggSelected={handleAggValueSelectedHandler}
+                                        count={aggregations[i].doc_count}
+                                        key={aggregations[i].key}
+                                        thevalue={aggregations[i].from}></ValueAggregationRadio>);
+                    }
+
+                } else if (this.props.multiple == 'true') {
+
+                    if (this.props.type == 'range') {
+
+                        aggregationNodes.push(
+                            <RangeAggregationCheckbox onAggSelected={handleAggRangeSelectedHandler}
+                                        count={aggregations[i].doc_count}
+                                        key={aggregations[i].key}
+                                        from={aggregations[i].from}
+                                        to={aggregations[i].to}></RangeAggregationCheckbox>);
+
+                    } else if (this.props.type == 'value') {
+                            aggregationNodes.push(
+                                <ValueAggregationCheckbox onAggSelected={this.handleAggMultipleValueSelectedHandler}
+                                            count={aggregations[i].doc_count}
+                                            key={aggregations[i].key}
+                                            thevalue={aggregations[i].from}></ValueAggregationCheckbox>);
+                    }
+                }
              }
           }
 
           return (
             <div>
               <h1>{this.props.title}</h1>
-              <a onClick={this.handleShowAll} className={this.state.showResetButton}>{this.props.alllabel}</a>
+
               <ol>
+                <li className={this.state.showResetButton}><a onClick={this.handleShowAll}>{this.props.alllabel}</a></li>
                 {aggregationNodes}
               </ol>
             </div>
@@ -289,16 +359,65 @@
         }
       });
 
-      var Aggregation = React.createClass({
+      var ValueAggregationRadio = React.createClass({
+        handleClick: function(e) {
+            e.preventDefault();
+            this.props.onAggSelected(this.refs.value.getDOMNode().value.trim());
+        },
+        render: function() {
+            return (
+                <li>
+                    <a onClick={this.handleClick}>
+                        <input type="hidden" ref="value" value={this.props.thevalue} />
+                        {this.props.key} ({this.props.count})
+                    </a>
+                </li>
+            );
+        }
+      });
+
+      var ValueAggregationCheckbox = React.createClass({
+        handleChange: function(e) {
+            this.props.onAggSelected(event.target.value, event.target.checked);
+        },
+        render: function() {
+            return (
+                <li>
+                    <input type="checkbox" onChange={this.handleChange} value={this.props.thevalue} />
+                    {this.props.key} ({this.props.count})
+                </li>
+            );
+        }
+      });
+
+      var RangeAggregationRadio = React.createClass({
 
         handleClick: function(e) {
             e.preventDefault();
-            console.log("In handleClick " + this.refs.from.getDOMNode().value.trim() + ' - ' + this.refs.to.getDOMNode().value.trim());
+           this.props.onAggSelected(this.refs.from.getDOMNode().value.trim(), this.refs.to.getDOMNode().value.trim());
+        },
+        render: function() {
+          return (
+            <li>
+                <a onClick={this.handleClick}>
+                    <input type="hidden" ref="from" value={this.props.from} />
+                    <input type="hidden" ref="to" value={this.props.to} />
+                    {this.props.key} ({this.props.count})
+                </a>
+            </li>
+          );
+        }
+      });
+
+      var RangeAggregationCheckbox = React.createClass({
+        handleClick: function(e) {
+            e.preventDefault();
             this.props.onAggSelected(this.refs.from.getDOMNode().value.trim(), this.refs.to.getDOMNode().value.trim());
         },
         render: function() {
           return (
             <li>
+                <input type="checkbox"/>
                 <a onClick={this.handleClick}>
                     <input type="hidden" ref="from" value={this.props.from} />
                     <input type="hidden" ref="to" value={this.props.to} />
@@ -344,7 +463,10 @@
       });
 
       
-      React.renderComponent( <PropertyBox url="http://homehub.herokuapp.com/api/properties" />, document.getElementById('content') );
+      //React.renderComponent( <PropertyBox url="http://homehub.herokuapp.com/api/properties" />, document.getElementById('content') );
+        React.renderComponent( <PropertyBox url="http://localhost:8080/api/properties" />, document.getElementById('content') );
+
+
 
       //var properties = [
       //  {title: "title 1", description: "description 1"},

@@ -4,16 +4,16 @@
     <title>Search HomeHub</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?libraries=places"></script>
-    <script src="react.min.js"></script>
-    <script src="JSXTransformer.js"></script>
-    <script type="text/javascript" src="snap.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="layout.css">
-    <link rel="stylesheet" type="text/css" href="skin.css">
+    <script src="../react.min.js"></script>
+    <script src="../JSXTransformer.js"></script>
+    <script type="text/javascript" src="../snap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="../layout.css">
+    <link rel="stylesheet" type="text/css" href="../skin.css">
 </head>
 <body>
     <section id="content"></section>
 
-    <script src="jquery.js"></script>
+    <script src="../jquery.js"></script>
     <script type="text/jsx">
       /** @jsx React.DOM */
 
@@ -463,8 +463,8 @@
       });
 
       
-      //React.renderComponent( <PropertyBox url="http://homehub.herokuapp.com/api/properties" />, document.getElementById('content') );
-        React.renderComponent( <PropertyBox url="http://localhost:8080/api/properties" />, document.getElementById('content') );
+      React.renderComponent( <PropertyBox url="http://homehub.herokuapp.com/api/properties" />, document.getElementById('content') );
+      //React.renderComponent( <PropertyBox url="http://localhost:8080/api/properties" />, document.getElementById('content') );
 
 
 

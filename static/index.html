@@ -278,7 +278,7 @@
         getInitialState: function() {
           return {showResetButton: "hideMe"};
         },
-        handleAggRangeSelected: function(from, to) {
+        handleAggRangeSelectedHandler: function(from, to) {
             this.props.onAggChange(from, to);
             this.setState({showResetButton: "showMe"});
             return false;
@@ -297,7 +297,6 @@
             return false;
         },
         render: function() {
-          var handleAggRangeSelectedHandler = this.handleAggRangeSelected;
           var handleAggValueSelectedHandler = this.handleAggValueSelected;
           var handleAggRangeSelectedHandler = this.handleAggRangeSelectedHandler;
 

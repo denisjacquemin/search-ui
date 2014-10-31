@@ -1,0 +1,68 @@
+var ValueAggregationRadio = React.createClass({
+    handleClick: function(e) {
+        e.preventDefault();
+        this.props.onAggSelected(this.refs.value.getDOMNode().value.trim());
+    },
+    render: function() {
+        return (
+            <li>
+                <a onClick={this.handleClick}>
+                    <input type="hidden" ref="value" value={this.props.thevalue} />
+                        {this.props.key} ({this.props.count})
+                </a>
+            </li>
+            );
+    }
+});
+
+var ValueAggregationCheckbox = React.createClass({
+    handleChange: function(e) {
+        this.props.onAggSelected(event.target.value, event.target.checked);
+    },
+    render: function() {
+        return (
+            <li>
+                <input type="checkbox" onChange={this.handleChange} value={this.props.thevalue} />
+                    {this.props.key} ({this.props.count})
+            </li>
+            );
+    }
+});
+
+var RangeAggregationRadio = React.createClass({
+
+    handleClick: function(e) {
+        e.preventDefault();
+        this.props.onAggSelected(this.refs.from.getDOMNode().value.trim(), this.refs.to.getDOMNode().value.trim());
+    },
+    render: function() {
+        return (
+            <li>
+                <a onClick={this.handleClick}>
+                    <input type="hidden" ref="from" value={this.props.from} />
+                    <input type="hidden" ref="to" value={this.props.to} />
+                    {this.props.key} ({this.props.count})
+                </a>
+            </li>
+            );
+    }
+});
+
+var RangeAggregationCheckbox = React.createClass({
+    handleClick: function(e) {
+        e.preventDefault();
+        this.props.onAggSelected(this.refs.from.getDOMNode().value.trim(), this.refs.to.getDOMNode().value.trim());
+    },
+    render: function() {
+        return (
+            <li>
+                <input type="checkbox"/>
+                <a onClick={this.handleClick}>
+                    <input type="hidden" ref="from" value={this.props.from} />
+                    <input type="hidden" ref="to" value={this.props.to} />
+                    {this.props.key} ({this.props.count})
+                </a>
+            </li>
+            );
+    }
+});

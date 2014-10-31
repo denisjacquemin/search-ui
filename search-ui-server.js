@@ -1,14 +1,23 @@
 var express = require('express');
-//    device  = require('device');
+    device  = require('express-device');
 var app = express();
+
+var router = express.Router();
 
 
 app.set('port', (process.env.PORT || 5000))
+app.set('view engine', 'ejs');
+
+app.use(device.capture());
+device.enableDeviceHelpers(app)
 
 app.use(express.static(__dirname + '/static'))
-//app.use(device.capture());
 
-app.get('/:filename', function(req, res) {
+router.get('/', function(req, res) {
+    res.render('pages/index');
+});
+
+router.get('/:filename', function(req, res) {
     var fileName = req.params.filename;
 
     var options = {
@@ -30,6 +39,8 @@ app.get('/:filename', function(req, res) {
         }
     });
 })
+
+app.use('/', router);
 
 app.listen(app.get('port'), function() {
     console.log("Node app is running at localhost:" + app.get('port'))

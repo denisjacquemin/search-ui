@@ -1,0 +1,86 @@
+var Aggregations = React.createClass({
+
+    getInitialState: function () {
+        return {showResetButton: "hideMe"};
+    },
+    handleAggRangeSelectedHandler: function (from, to) {
+        this.props.onAggChange(from, to);
+        this.setState({showResetButton: "showMe"});
+        return false;
+    },
+    handleAggValueSelected: function (value) {
+        this.props.onAggChange(value);
+        return false;
+    },
+    handleAggMultipleValueSelectedHandler: function (value, toBeAdded) {
+        this.props.onAggChange(value, toBeAdded);
+        return false;
+    },
+    handleShowAll: function () {
+        this.props.onAggChange(null, null);
+        this.setState({showResetButton: "hideMe"});
+        return false;
+    },
+    render: function () {
+        var handleAggValueSelectedHandler = this.handleAggValueSelected;
+        var handleAggRangeSelectedHandler = this.handleAggRangeSelectedHandler;
+
+        var aggregationNodes = [];
+        var aggregations = this.props.aggregations;
+        for (var i = 0; i < aggregations.length; i++) {
+            if (aggregations[i].doc_count > 0) {
+
+                if (this.props.multiple == 'false') {
+
+                    if (this.props.type == 'range') {
+
+                        aggregationNodes.push(
+                            <RangeAggregationRadio onAggSelected={handleAggRangeSelectedHandler}
+                            count={aggregations[i].doc_count}
+                            key={aggregations[i].key}
+                            from={aggregations[i].from}
+                            to={aggregations[i].to}></RangeAggregationRadio>);
+                    } else if (this.props.type == 'value') {
+                        aggregationNodes.push(
+                            <ValueAggregationRadio onAggSelected={handleAggValueSelectedHandler}
+                            count={aggregations[i].doc_count}
+                            key={aggregations[i].key}
+                            thevalue={aggregations[i].from}></ValueAggregationRadio>);
+                    }
+
+                } else if (this.props.multiple == 'true') {
+
+                    if (this.props.type == 'range') {
+
+                        aggregationNodes.push(
+                            <RangeAggregationCheckbox onAggSelected={handleAggRangeSelectedHandler}
+                            count={aggregations[i].doc_count}
+                            key={aggregations[i].key}
+                            from={aggregations[i].from}
+                            to={aggregations[i].to}></RangeAggregationCheckbox>);
+
+                    } else if (this.props.type == 'value') {
+                        aggregationNodes.push(
+                            <ValueAggregationCheckbox onAggSelected={this.handleAggMultipleValueSelectedHandler}
+                            count={aggregations[i].doc_count}
+                            key={aggregations[i].key}
+                            thevalue={aggregations[i].from}></ValueAggregationCheckbox>);
+                    }
+                }
+            }
+        }
+
+        return (
+            <div>
+                <h1>{this.props.title}</h1>
+
+                <ol>
+                    <li className={this.state.showResetButton}>
+                        <a onClick={this.handleShowAll}>{this.props.alllabel}</a>
+                    </li>
+        {aggregationNodes}
+                </ol>
+            </div>
+            );
+    }
+});

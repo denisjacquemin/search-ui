@@ -1,0 +1,96 @@
+
+
+      var Suggest = React.createClass({
+        getDefaultProps: function() {
+            var gMapsPlacesService;
+            try {
+                gMapsPlacesService = new google.maps.places.AutocompleteService();
+            } catch (err) {
+                console.log(err + ' Error initializing google.maps.places.AutocompleteService()');
+            }
+
+            return {
+                gMapsPlacesService: gMapsPlacesService
+            };
+        },
+        getInitialState: function() {
+          return {data: [], current: 0};
+        },
+        handleChange: function() {
+            var querystring = this.refs.querystring.getDOMNode().value.trim();
+            if (querystring.length > 1 && this.props.gMapsPlacesService != undefined) {
+                var keepThis = this;
+                this.props.gMapsPlacesService.getPlacePredictions({ input: querystring },
+                    function(predictions, status) {
+                       if (status == google.maps.places.PlacesServiceStatus.OK) {
+                         keepThis.setState({data: predictions, current: 0});
+                       } else {
+                         console.log('PlacesServiceStatus: ' + status + ' predictions: ' + predictions);
+                       }
+                    }
+                );
+            }
+
+        },
+        handleKeyUp: function(e) {
+            if (this.state.data.length > 0) { // do only if they are any predictions
+                switch(e.key) {
+                    case 'ArrowDown':
+                        this.setState({current: this.getSuggestionIndex('down')});
+                        break;
+                    case 'ArrowUp':
+                        this.setState({current: this.getSuggestionIndex('up')});
+                        break;
+                    case 'Enter':
+                        console.log('enter');
+                        break;
+                }
+                this.refs.querystring.getDOMNode().value = this.state.data[this.state.current].description;
+            }
+        },
+        getSuggestionIndex: function(direction) {
+            // current is the current element selected
+            // direction is up or down
+            if (direction == 'down') {
+                if (this.state.current + 1 <= this.state.data.length -1) {
+                    // do select li[this.state.current + 1]
+                    return this.state.current + 1;
+                } else {
+                    // li[this.state.current] already selected
+                    return this.state.current;
+                }
+            } else if (direction == 'up') {
+                if (this.state.current - 1 >= 0) {
+                    // do select li[this.state.current - 1]
+                    return this.state.current - 1
+                } else {
+                    // li[this.state.current] already selected
+                    return this.state.current;
+                }
+            }
+        },
+        render: function() {
+            return (
+                <div>
+                    <input type="text" ref="querystring" onChange={this.handleChange} onKeyUp={this.handleKeyUp}/>
+                    <SuggestedItems data={this.state.data} />
+                </div>
+            );
+        }
+      });
+
+      var SuggestedItems = React.createClass({
+        render: function() {
+            var suggestedItemsNodes = this.props.data.map(function (s) {
+              return (
+                <li>{s.description}</li>
+              );
+          });
+
+          return (
+              <ul>
+                  {suggestedItemsNodes}
+              </ul>
+          );
+        }
+      });

@@ -1,0 +1,33 @@
+var Properties = React.createClass({
+    render: function() {
+        var propertyNodes = this.props.data.map(function (property) {
+            var p = property._source.property;
+            return (
+                <Property title={p.title}
+                description={p.description}
+                bedroomcount={p.bedroomcount}
+                lon={p.location.lon}
+                lat={p.location.lat}
+                score={property._score} ></Property>
+                );
+        });
+        return (
+            <div className="properties">
+              {propertyNodes}
+            </div>
+            );
+    }
+});
+
+var Property = React.createClass({
+    render: function() {
+        return (
+            <div className="property">
+                <span>{this.props.score}</span>
+                <h1>{this.props.title}({this.props.bedroomcount} rooms)</h1>
+                <p>{this.props.description}</p>
+                <ul><li>{this.props.lon}</li><li>{this.props.lat}</li></ul>
+            </div>
+            );
+    }
+});

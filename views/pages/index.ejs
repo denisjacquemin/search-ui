@@ -2,7 +2,10 @@
 <html>
 <head>
     <title>Search HomeHub</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="x-ua-compatible" content="IE=edge" />
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-touch-fullscreen" content="yes">
     <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?libraries=places"></script>
     <script src="../react.min.js"></script>
     <script src="../JSXTransformer.js"></script>
@@ -10,7 +13,7 @@
     <link rel="stylesheet" type="text/css" href="../layout.css">
     <link rel="stylesheet" type="text/css" href="../skin.css">
 </head>
-<body class="snapjs-left">
+<body class=" <% if (! is_phone) { %>no-snap<% } %>">
     <section id="content"></section>
 
     <script src="../jquery.js"></script>

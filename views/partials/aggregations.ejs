@@ -63,7 +63,7 @@ var Aggregations = React.createClass({
                         aggregationNodes.push(
                             <ValueAggregationCheckbox onAggSelected={this.handleAggMultipleValueSelectedHandler}
                             count={aggregations[i].doc_count}
-                            key={aggregations[i].key}
+                            key={aggregations[i].from}
                             thevalue={aggregations[i].from}></ValueAggregationCheckbox>);
                     }
                 }
@@ -78,7 +78,7 @@ var Aggregations = React.createClass({
                     <li className={this.state.showResetButton}>
                         <a onClick={this.handleShowAll}>{this.props.alllabel}</a>
                     </li>
-        {aggregationNodes}
+                    {aggregationNodes}
                 </ol>
             </div>
             );

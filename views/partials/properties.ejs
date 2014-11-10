@@ -1,7 +1,7 @@
 var Properties = React.createClass({
     render: function() {
         var propertyNodes = this.props.data.map(function (property) {
-            var p = property._source.property;
+            var p = property._source;
             return (
                 <Property title={p.title}
                 description={p.description}

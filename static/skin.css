@@ -10,14 +10,22 @@ div.snap-drawers {
     color: #efefef;
 }
 
+.aggregation ol {
+    list-style: none;
+}
+
 .aggregation h1 {
     font-size: 15px;
     color: #ffffff;
+    font-weight: normal;
+    font-family: arial, helvetica, sans-serif;
+
 }
 
 .aggregation a {
-    font-size: 13px;
-    padding: 4px;
+    font-size: 15px;
+    padding: 5px;
+    display: block;
 }
 
 .aggregation a:hover {

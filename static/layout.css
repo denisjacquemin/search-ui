@@ -51,9 +51,16 @@ div.snap-content {
     left: 266px;
 }
 
-div.aggregations {
-    margin: 0 5px;
+.aggregation ol {
+    margin:0 0 0 10px;
+    padding:0;
 }
-div.aggregation ol {
-    margin: 2px 5px;
+
+.aggregation li {
+    margin:0;
+    padding:0;
+}
+
+.aggregation h1 {
+    margin: 15px 0 5px 0;
 }

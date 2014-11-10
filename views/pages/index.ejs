@@ -28,6 +28,7 @@
                 type: 'GET',
                 data: property,
                 success: function(data) {
+                  console.log('number of hits: ' + data.hits.hits.length);
                   if (data.hits != undefined) { this.setState({total: data.hits.total}); }
                   if (data.hits.hits != undefined) { this.setState({properties: data.hits.hits}); }
                   if (data.aggregations != undefined) { this.setState({aggregations: data.aggregations}); }
@@ -150,8 +151,8 @@
                 <form onSubmit={this.handleSubmit}>
                   <input name="location" />
                   <Suggest />
-                  <input type="hidden" ref="lon" value="4.332853" />
-                  <input type="hidden" ref="lat" value="40.122853" />
+                  <input type="hidden" ref="lon" value="5.588005" />
+                  <input type="hidden" ref="lat" value="50.615451" />
                   <select ref="distance">
                     <option value="5">5km</option>
                     <option value="10">10km</option>
